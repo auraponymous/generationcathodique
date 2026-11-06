@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Génération Cathodique</title>
+<meta name="description" content="Génération Cathodique — zappez parmi les séries et dessins animés de la télévision française des années 80.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Oswald:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=VT323&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   GÉNÉRATION CATHODIQUE — un seul fichier, données Google Sheets (gviz)
+   ========================================================= */
+:root{
+  --room:#140d09;
+  --room-2:#21150e;
+    --plastic:#1c1b1a;
+  --silver-1:#d9d6cf; --silver-2:#a9a59c;
+  --led-green:#7dff9b;
+  --led-amber:#ffb347;
+  --led-red:#ff4d3d;
+  --paper:#f3ead3; --ink:#1d1611; --mag-red:#d1261d;
+  --glow:#e63946;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{
+  min-height:100vh;
+  background:var(--room);
+  color:#f1e7d6;
+  font-family:"Source Serif 4",Georgia,serif;
+  overflow-x:hidden;
+  position:relative;
+}
+/* papier peint années 80 + lueur de l'écran sur le mur */
+body::before{
+  content:"";position:fixed;inset:0;z-index:-2;
+  background:
+    radial-gradient(circle at 50% 38%, color-mix(in srgb,var(--glow) 34%, transparent) 0, transparent 46%),
+    radial-gradient(circle at 12px 12px, rgba(255,190,120,.055) 3px, transparent 4px) 0 0/24px 24px,
+    repeating-linear-gradient(90deg, rgba(255,170,90,.035) 0 2px, transparent 2px 48px),
+    linear-gradient(180deg,var(--room-2),var(--room));
+  transition:background .6s ease;
+}
+body::after{ /* parquet / sol */
+  content:"";position:fixed;left:0;right:0;bottom:0;height:22vh;z-index:-1;
+  background:linear-gradient(180deg,transparent,rgba(0,0,0,.55));
+  pointer-events:none;
+}
+.wrap{width:min(1040px,100%);margin:0 auto;padding:22px 16px 40px}
+
+/* ---------- En-tête ---------- */
+header{text-align:center;margin:6px 0 22px}
+.logo{
+  font-family:"Bungee",system-ui,sans-serif;
+  font-size:clamp(28px,5.6vw,52px);
+  line-height:.95;margin:0;letter-spacing:.01em;
+  background:linear-gradient(180deg,#fff 0%,#ffe2b8 30%,#ff8a3d 52%,#c2185b 53%,#ff5d8f 80%,#ffd1e0 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 3px 0 #2a0b1a) drop-shadow(0 0 18px rgba(255,93,143,.35));
+  transform:skew(-6deg);
+}
+.tagline{font-family:"VT323",monospace;font-size:20px;color:#d8c3a5;margin:8px 0 0;letter-spacing:.06em}
+
+/* ---------- Téléviseur (années 80-90 : caisson plastique noir) ---------- */
+.tv{
+  position:relative;width:min(680px,100%);margin:0 auto;
+  padding:18px 18px 0;border-radius:16px 16px 12px 12px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.07),transparent 16%),
+    radial-gradient(circle at 1px 1px,rgba(255,255,255,.035) 1px,transparent 1.3px) 0 0/4px 4px,
+    linear-gradient(180deg,#303033,#1c1c1e 62%,#141416);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 0 -2px 0 rgba(0,0,0,.7),
+    0 26px 50px rgba(0,0,0,.65),
+    0 0 0 1px #050505;
+}
+.tv::after{ /* socle pivotant */
+  content:"";position:absolute;left:31%;right:31%;bottom:-13px;height:13px;
+  background:linear-gradient(180deg,#1d1d1f,#0b0b0c);
+  border-radius:0 0 40% 40% / 0 0 100% 100%;
+  box-shadow:0 8px 14px rgba(0,0,0,.55);
+}
+.bezel{
+  background:linear-gradient(180deg,#0d0d0e,#1e1e20);
+  border-radius:12px;padding:14px;
+  box-shadow:inset 0 3px 8px rgba(0,0,0,.95), 0 1px 0 rgba(255,255,255,.09);
+}
+.screen{
+  position:relative;aspect-ratio:4/3;width:100%;
+  border-radius:16px / 20px;overflow:hidden;container-type:inline-size;
+  background:#03100b;
+  cursor:pointer;outline:none;
+  box-shadow:0 0 0 3px #000, inset 0 0 0 1px rgba(255,255,255,.05);
+  isolation:isolate;
+}
+.screen:focus-visible{box-shadow:0 0 0 3px #000,0 0 0 6px var(--led-amber)}
+.scene{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:9% 8%;
+  background:
+    radial-gradient(ellipse at 50% 55%, color-mix(in srgb,var(--glow) 55%, #000) 0, color-mix(in srgb,var(--glow) 18%, #000) 55%, #020202 100%);
+  transition:background .4s ease;
+}
+.scene .bands{position:absolute;left:0;right:0;bottom:14%;height:10%;display:flex;flex-direction:column;gap:6%;opacity:.55;z-index:0}
+.scene .bands i{flex:1;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--glow) 70%, #fff),transparent)}
+.osd{position:absolute;top:6%;left:7%;font-family:"VT323",monospace;font-size:max(16px,6cqw);color:var(--led-green);text-shadow:0 0 8px rgba(125,255,155,.8);z-index:3;letter-spacing:.04em}
+.osd-r{position:absolute;top:6.5%;right:7%;font-family:"VT323",monospace;font-size:max(11px,3.4cqw);color:#fff;opacity:.85;z-index:3;text-shadow:0 0 6px rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.08em}
+.s-title{
+  position:relative;z-index:2;margin:0;
+  font-family:"Bungee",system-ui,sans-serif;font-weight:400;
+  color:#fff;line-height:1.02;text-wrap:balance;
+  text-shadow:0 0 2px #fff, 0 0 14px color-mix(in srgb,var(--glow) 80%, #fff), 3px 3px 0 rgba(0,0,0,.55);
+}
+.s-meta{position:relative;z-index:2;margin-top:4%;font-family:"VT323",monospace;font-size:max(13px,4.4cqw);color:#ffe9c7;letter-spacing:.05em;text-shadow:0 0 6px rgba(255,220,170,.6)}
+.s-tag{display:inline-block;position:relative;z-index:2;margin-top:3%;padding:.1em .6em;border:2px solid currentColor;font-family:"VT323",monospace;font-size:max(11px,3.2cqw);color:var(--led-amber);text-transform:uppercase;letter-spacing:.12em}
+.s-hint{position:absolute;bottom:6%;left:0;right:0;z-index:3;font-family:"VT323",monospace;font-size:max(11px,2.9cqw);color:#fff;opacity:.7;letter-spacing:.08em;animation:blink 1.6s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+
+/* télétexte */
+.txt{position:absolute;inset:0;background:#000;z-index:4;display:none;flex-direction:column;font-family:"VT323",monospace;color:#fff;padding:5% 6% 4%}
+.screen.teletext .txt{display:flex}
+.txt-head{display:flex;justify-content:space-between;gap:8px;font-size:max(12px,3.7cqw);color:#ffff55;white-space:nowrap}
+.txt-head b{background:#0000c8;color:#fff;font-weight:400;padding:0 .35em}
+.txt-sub{font-size:max(11px,3.2cqw);color:#55ffff;margin:.3em 0 .4em;border-bottom:2px solid #ff55ff;padding-bottom:.2em}
+.txt-list{flex:1;overflow:auto;margin:0;padding:0;list-style:none;scrollbar-width:thin;scrollbar-color:#ff55ff #000}
+.txt-list li button{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:.6em;width:100%;font-size:max(13px,3.7cqw);line-height:1.15;padding:.05em .2em}
+.txt-list li:nth-child(3n+1) button{color:#fff}
+.txt-list li:nth-child(3n+2) button{color:#55ffff}
+.txt-list li:nth-child(3n) button{color:#ffff55}
+.txt-list li button:hover,.txt-list li button:focus-visible,.txt-list li button.cur{background:#ff55ff;color:#000}
+.txt-list .n{color:#55ff55;min-width:2.2em}
+.txt-list .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.txt-list li button:hover .n,.txt-list li button.cur .n{color:#000}
+
+/* couches CRT */
+canvas.noise{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;z-index:5;opacity:.07;pointer-events:none;mix-blend-mode:screen}
+.scan{position:absolute;inset:0;z-index:6;pointer-events:none;
+  background:repeating-linear-gradient(180deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px);
+  animation:flicker 4s infinite steps(60)}
+@keyframes flicker{0%,100%{opacity:.9}50%{opacity:.75}}
+.glass{position:absolute;inset:0;z-index:7;pointer-events:none;border-radius:inherit;
+  background:radial-gradient(ellipse at 28% 18%,rgba(255,255,255,.14),transparent 38%);
+  box-shadow:inset 0 0 70px 18px rgba(0,0,0,.85), inset 0 0 8px rgba(0,0,0,.9)}
+.screen.on .scene,.screen.on .txt{animation:poweron .7s cubic-bezier(.2,.8,.2,1)}
+@keyframes poweron{0%{transform:scale(1,.004);filter:brightness(6)}45%{transform:scale(1,.004);filter:brightness(6)}70%{transform:scale(1,1.02);filter:brightness(1.6)}100%{transform:none;filter:none}}
+.screen.zap .scene{animation:roll .28s steps(4)}
+@keyframes roll{0%{transform:translateY(-6%) skewX(3deg)}50%{transform:translateY(4%) skewX(-2deg)}100%{transform:none}}
+
+/* ---------- Façade de commandes ---------- */
+.controls{
+  display:grid;grid-template-columns:1fr auto auto 1fr;align-items:center;gap:16px;
+  padding:12px 4px 15px;color:#d8d5ce;
+}
+.spk{height:42px;border-radius:3px;background:repeating-linear-gradient(180deg,#09090a 0 3px,transparent 3px 7px);box-shadow:0 1px 0 rgba(255,255,255,.05)}
+.panel-mid{display:flex;flex-direction:column;align-items:center;gap:8px}
+.brandline{display:flex;gap:10px;align-items:baseline;font-family:"Oswald",sans-serif;white-space:nowrap}
+.brand{font-weight:700;letter-spacing:.24em;font-size:13px;background:linear-gradient(180deg,#fafafa,#8e8e8e);-webkit-background-clip:text;background-clip:text;color:transparent}
+.model{font-size:9.5px;letter-spacing:.26em;color:#8d8a84;text-transform:uppercase}
+.model b{color:#e63946;font-weight:600}
+.row{display:flex;gap:10px;align-items:center}
+.chan-led{min-width:52px;background:#140404;border-radius:4px;padding:1px 8px;text-align:center;font-family:"VT323",monospace;font-size:28px;line-height:1.1;color:var(--led-red);text-shadow:0 0 8px rgba(255,77,61,.9);box-shadow:inset 0 2px 4px #000,0 0 0 1px #000}
+.btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.btn{
+  appearance:none;border:0;cursor:pointer;
+  font-family:"Oswald",sans-serif;font-weight:600;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:#ebe8e2;padding:8px 11px;border-radius:4px;
+  background:linear-gradient(180deg,#434347,#26262a);
+  box-shadow:0 2px 0 #040404, 0 3px 6px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.14);
+  transition:transform .06s, box-shadow .06s;
+}
+.btn:active,.btn.pressed{transform:translateY(2px);box-shadow:0 0 0 #040404,0 1px 2px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.14)}
+.btn:focus-visible{outline:2px solid var(--led-amber);outline-offset:2px}
+.btn.red{background:linear-gradient(180deg,#ff5d4f,#b8241a);color:#fff;box-shadow:0 2px 0 #4a0c07,0 3px 6px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.35)}
+.btn[aria-pressed="true"]{background:linear-gradient(180deg,#ffd27a,#e0a03a);color:#1d1a15}
+.btn .ar{font-size:12px}
+.power{display:flex;flex-direction:column;align-items:center;gap:7px}
+.pled{width:7px;height:7px;border-radius:50%;background:var(--led-red);box-shadow:0 0 7px 2px rgba(255,77,61,.75)}
+.pbtn{width:30px;height:18px;border-radius:3px;background:linear-gradient(180deg,#dcdcdc,#8c8c8c);box-shadow:0 2px 0 #000,inset 0 1px 0 #fff}
+.power small{font-family:"Oswald",sans-serif;font-size:8.5px;letter-spacing:.2em;color:#8d8a84}
+
+/* ---------- Magnétoscope (recherche + filtres) ---------- */
+.deck{
+  margin:30px auto 0;width:min(680px,100%);
+  border-radius:12px;padding:16px 18px 14px;
+  background:linear-gradient(180deg,#2b2b2d,#18181a 40%,#0f0f10);
+  box-shadow:0 18px 40px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.12), 0 0 0 1px #000;
+}
+.deck-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;font-family:"Oswald",sans-serif;letter-spacing:.24em;font-size:11px;color:#9d978c;text-transform:uppercase}
+.deck-top .slot{flex:1;height:10px;border-radius:3px;background:#050505;box-shadow:inset 0 2px 3px #000,0 1px 0 rgba(255,255,255,.08);max-width:340px}
+.deck-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:end}
+.deck-row .field.search{grid-column:span 3}
+.deck-row .counter{grid-column:4;grid-row:1}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-family:"Oswald",sans-serif;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#a59f94}
+.lcd{
+  width:100%;min-width:0;height:42px;border:0;border-radius:6px;padding:0 12px;
+  background:#071a0e;color:var(--led-green);
+  font-family:"VT323",monospace;font-size:24px;letter-spacing:.04em;
+  text-shadow:0 0 6px rgba(125,255,155,.7);
+  box-shadow:inset 0 2px 6px #000,0 0 0 1px #2c3a2f;
+}
+.lcd::placeholder{color:rgba(125,255,155,.38)}
+.lcd:focus{outline:2px solid var(--led-green);outline-offset:1px}
+select.lcd{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:26px;font-size:20px;color:var(--led-amber);text-shadow:0 0 6px rgba(255,179,71,.6);background:#1a1006 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0h10L5 6z' fill='%23ffb347'/%3E%3C/svg%3E") no-repeat right 10px center;box-shadow:inset 0 2px 6px #000,0 0 0 1px #3d2d16;text-overflow:ellipsis}
+select.lcd:focus{outline-color:var(--led-amber)}
+select.lcd option{background:#1a1006;color:#ffd9a3}
+.counter{display:flex;flex-direction:column;gap:4px;align-items:stretch}
+.counter .val{height:42px;min-width:92px;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:6px;background:#140303;font-family:"VT323",monospace;font-size:28px;color:var(--led-red);text-shadow:0 0 8px rgba(255,77,61,.9);box-shadow:inset 0 2px 6px #000}
+.deck-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.eject{appearance:none;border:0;cursor:pointer;font-family:"Oswald",sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#d9d4ca;background:linear-gradient(180deg,#4a4a4d,#2b2b2e);padding:8px 14px;border-radius:5px;box-shadow:0 2px 0 #000,inset 0 1px 0 rgba(255,255,255,.15)}
+.eject:active{transform:translateY(2px);box-shadow:none}
+.eject:focus-visible{outline:2px solid var(--led-amber);outline-offset:2px}
+.keys{font-family:"VT323",monospace;font-size:17px;color:#8f897e;letter-spacing:.03em}
+.keys kbd{font-family:inherit;border:1px solid #55524c;border-bottom-width:2px;border-radius:3px;padding:0 5px;color:#cfc8bb}
+
+footer{margin-top:34px;text-align:center;font-family:"VT323",monospace;font-size:17px;color:#9b8a73;letter-spacing:.04em}
+footer a{color:#d8b98e}
+
+/* ---------- Fiche façon magazine télé ---------- */
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(8,5,3,.78);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;padding:4vh 16px;overflow:auto}
+.overlay.open{display:flex}
+.mag{
+  position:relative;width:min(780px,100%);
+  background:
+    radial-gradient(circle at 20% 30%,rgba(120,90,40,.06) 0 1px,transparent 1px) 0 0/5px 5px,
+    linear-gradient(180deg,#f7efda,var(--paper));
+  color:var(--ink);border-radius:4px;
+  box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 1px rgba(0,0,0,.2);
+  transform:rotate(-.4deg);
+  animation:magin .35s cubic-bezier(.2,.9,.25,1.15);
+}
+@keyframes magin{from{transform:translateY(30px) rotate(-3deg);opacity:0}}
+.mag-band{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--mag-red);color:#fff;padding:10px 60px 10px 22px;font-family:"Oswald",sans-serif;font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:14px}
+.mag-band .p{font-family:"VT323",monospace;font-size:26px;letter-spacing:.04em;font-weight:400}
+.mag-body{padding:22px 26px 10px}
+.mag-kicker{font-family:"Oswald",sans-serif;font-weight:600;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--mag-red)}
+.mag h2{font-family:"Oswald",sans-serif;font-weight:700;font-size:clamp(32px,6vw,56px);line-height:.98;margin:.12em 0 .32em;text-transform:uppercase;letter-spacing:-.005em;text-wrap:balance}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));border-top:3px solid var(--ink);border-bottom:1px solid var(--ink);margin-bottom:18px}
+.fact{padding:9px 10px 10px;border-right:1px dotted rgba(29,22,17,.45)}
+.fact:last-child{border-right:0}
+.fact dt{font-family:"Oswald",sans-serif;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:#6f5f4c}
+.fact dd{margin:2px 0 0;font-family:"Oswald",sans-serif;font-weight:600;font-size:18px;line-height:1.15}
+.credits{display:grid;grid-template-columns:1fr 1fr;gap:4px 28px}
+.credit{padding:10px 0 12px;border-bottom:1px solid rgba(29,22,17,.18)}
+.credit.full{grid-column:1/-1}
+.credit h3{margin:0 0 6px;font-family:"Oswald",sans-serif;font-weight:600;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--mag-red)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{appearance:none;border:0;cursor:pointer;text-align:left;font:inherit;font-size:15.5px;line-height:1.25;color:var(--ink);background:rgba(29,22,17,.07);border-radius:3px;padding:3px 8px;transition:background .15s}
+.chip:hover,.chip:focus-visible{background:#ffd27a;outline:none}
+.chip small{color:#6f5f4c;font-size:.86em}
+.mag-note{font-size:13px;color:#6f5f4c;margin:14px 0 0;font-style:italic}
+.mag-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:14px 26px 20px}
+.mbtn{appearance:none;border:2px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;font-family:"Oswald",sans-serif;font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;padding:9px 14px;border-radius:2px}
+.mbtn:hover,.mbtn:focus-visible{background:var(--ink);color:var(--paper);outline:none}
+.mbtn.close{position:absolute;top:8px;right:12px;border:0;color:#fff;font-size:22px;padding:2px 8px;line-height:1}
+.mbtn.close:hover{background:rgba(0,0,0,.2);color:#fff}
+
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Responsive ---------- */
+@media (max-width:720px){
+  .deck-row{grid-template-columns:1fr 1fr}
+  .deck-row .field.search{grid-column:1/-1}
+  .deck-row .counter{grid-column:1/-1;grid-row:auto}
+  .tv{padding:10px 10px 0;border-radius:12px}
+  .bezel{padding:8px;border-radius:9px}
+  .screen{border-radius:12px / 15px}
+  .controls{grid-template-columns:1fr;gap:8px;padding:10px 2px 12px}
+  .spk,.power{display:none}
+  .row{flex-wrap:wrap;justify-content:center}
+  .btn{padding:9px 10px}
+  .deck{padding:14px 12px}
+  .keys{display:none}
+  .credits{grid-template-columns:1fr}
+  .mag-body{padding:18px 16px 6px}
+  .mag-foot{padding:12px 16px 18px}
+  .mag-band{padding:10px 52px 10px 16px;font-size:12px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 class="logo">Génération Cathodique</h1>
+    <p class="tagline">Zappez dans les séries et dessins animés des années 80</p>
+  </header>
+
+  <main>
+    <section class="tv" aria-label="Téléviseur">
+      <div class="bezel">
+        <div class="screen on" id="screen" role="button" tabindex="0" aria-label="Écran : ouvrir la fiche de la série">
+          <div class="scene" id="scene">
+            <div class="osd" id="osd">P--</div>
+            <div class="osd-r" id="osdR"></div>
+            <h2 class="s-title" id="sTitle">Recherche des chaînes…</h2>
+            <div class="s-meta" id="sMeta"></div>
+            <div class="s-tag" id="sTag" hidden></div>
+            <div class="bands" aria-hidden="true"><i></i><i></i><i></i></div>
+            <div class="s-hint" id="sHint" hidden>OK ▸ voir la fiche</div>
+          </div>
+          <div class="txt" id="txt" aria-label="Télétexte : liste des séries">
+            <div class="txt-head"><span><b>P100</b> GÉNÉRATION CATHODIQUE</span><span id="txtDate"></span></div>
+            <div class="txt-sub" id="txtSub">LE GUIDE DES PROGRAMMES</div>
+            <ul class="txt-list" id="txtList"></ul>
+          </div>
+          <canvas class="noise" id="noise" width="160" height="120" aria-hidden="true"></canvas>
+          <div class="scan" aria-hidden="true"></div>
+          <div class="glass" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <div class="controls" aria-label="Commandes du téléviseur">
+        <div class="spk" aria-hidden="true"></div>
+        <div class="panel-mid">
+          <div class="brandline"><span class="brand">GC·80</span><span class="model">Color TV · <b>Stéréo</b> · 100 programmes</span></div>
+          <div class="row">
+            <div class="chan-led" id="chanLed" aria-hidden="true">--</div>
+            <div class="btns">
+              <button class="btn" id="bPrev" aria-label="Chaîne précédente"><span class="ar">▼</span> CH</button>
+              <button class="btn" id="bNext" aria-label="Chaîne suivante"><span class="ar">▲</span> CH</button>
+              <button class="btn" id="bZap" aria-label="Chaîne au hasard">Zap</button>
+              <button class="btn" id="bTxt" aria-pressed="false" aria-label="Télétexte : liste des séries">Txt</button>
+              <button class="btn red" id="bOk" aria-label="Ouvrir la fiche">OK · Fiche</button>
+            </div>
+          </div>
+        </div>
+        <div class="power" aria-hidden="true"><span class="pled"></span><span class="pbtn"></span><small>POWER</small></div>
+        <div class="spk" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="deck" aria-label="Recherche et filtres">
+      <div class="deck-top"><span>Magnéto · Recherche</span><span class="slot" aria-hidden="true"></span><span>Programmes</span></div>
+      <div class="deck-row">
+        <div class="field search">
+          <label for="q">Recherche</label>
+          <input class="lcd" id="q" type="search" placeholder="Titre, nom, générique…" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="field"><label for="fFam">Famille</label><select class="lcd" id="fFam"></select></div>
+        <div class="field"><label for="fChan">Chaîne</label><select class="lcd" id="fChan"></select></div>
+        <div class="field"><label for="fPays">Pays</label><select class="lcd" id="fPays"></select></div>
+        <div class="field"><label for="fSort">Ordre</label>
+          <select class="lcd" id="fSort">
+            <option value="base">Base</option>
+            <option value="year">Année</option>
+            <option value="az">A → Z</option>
+          </select>
+        </div>
+        <div class="field counter"><label for="count">Séries</label><output class="val" id="count" aria-live="polite">000</output></div>
+      </div>
+      <div class="deck-bottom">
+        <button class="eject" id="reset">⏏ Tout effacer</button>
+        <div class="keys"><kbd>←</kbd><kbd>→</kbd> zapper · <kbd>Entrée</kbd> fiche · <kbd>T</kbd> télétexte · <kbd>/</kbd> rechercher</div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="foot">Données : Google Sheets</footer>
+</div>
+
+<div class="overlay" id="overlay" aria-hidden="true">
+  <article class="mag" role="dialog" aria-modal="true" aria-labelledby="mTitle" id="mag">
+    <div class="mag-band"><span>La fiche · Génération Cathodique</span><span class="p" id="mP"></span></div>
+    <button class="mbtn close" id="mClose" aria-label="Fermer la fiche">✕</button>
+    <div class="mag-body">
+      <div class="mag-kicker" id="mKicker"></div>
+      <h2 id="mTitle"></h2>
+      <dl class="facts" id="mFacts"></dl>
+      <div class="credits" id="mCredits"></div>
+      <p class="mag-note">Astuce : cliquez sur un nom pour retrouver toutes les séries où il apparaît.</p>
+    </div>
+    <div class="mag-foot">
+      <button class="mbtn" id="mPrev">◀ Chaîne préc.</button>
+      <button class="mbtn" id="mNext">Chaîne suiv. ▶</button>
+    </div>
+  </article>
+</div>
+
+<div class="sr" aria-live="polite" id="live"></div>
+
+<script>
+/* ===================== CONFIGURATION ===================== */
+const SHEET_ID   = "1Lt7PLl4H_Pz-rzUzIUZe0_Xvo7rJwvpU0bXOe4qXOLI";
+const SHEET_NAME = "";   // vide = premier onglet ; sinon nom exact de l'onglet
+
+/* Couleur d'ambiance par chaîne (lueur sur le mur et fond d'écran) */
+const CHANNEL_COLORS = {
+  "tf1":"#2f6bff", "antenne 2":"#e63946", "fr3":"#13a89e", "la cinq":"#f08a24",
+  "canal+":"#8f5bd6", "m6":"#e0c21b", "ortf":"#c9c2b0", "rtbf":"#4cb3e6"
+};
+const FALLBACK_COLOR = "#ff5d8f";
+
+/* Correspondance colonnes ← en-têtes du Sheet (comparaison sans accents ni casse) */
+const FIELDS = [
+  ["titre","titre"], ["famille","famille"], ["pays","pays"], ["annee","premiere diffusion"],
+  ["chaine","chaine"], ["episodes","episodes"], ["createur","createur"], ["realisateur","realisateur"],
+  ["scenariste","scenariste"], ["dessinateur","dessinateur"], ["compositeur","compositeur"],
+  ["generique","generique"], ["acteurs","acteurs"]
+];
+const CREDITS = [
+  ["createur","Création / auteur"], ["realisateur","Réalisation"], ["scenariste","Scénario"],
+  ["dessinateur","Dessin / character design"], ["compositeur","Musique"],
+  ["generique","Générique français"], ["acteurs","Acteurs principaux"]
+];
+
+/* ===================== UTILITAIRES ===================== */
+const $ = s => document.querySelector(s);
+const norm = s => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().trim();
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const slug = s => norm(s).replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+const pad = n => String(n).padStart(2,"0");
+const split = s => String(s||"").split(/\s*;\s*/).map(x=>x.trim()).filter(Boolean);
+const mainChannel = c => (String(c||"").split("/")[0]||"").trim();
+const colorFor = c => CHANNEL_COLORS[norm(mainChannel(c))] || FALLBACK_COLOR;
+const stripArticle = t => norm(t).replace(/^(les |le |la |l')/,"");
+
+/* ===================== ÉTAT ===================== */
+let ALL = [], LIST = [], idx = 0, teletext = false;
+
+/* ===================== CHARGEMENT (gviz JSONP : marche aussi en local) ===================== */
+function loadSheet(){
+  const cb = "gcData_" + Date.now();
+  window[cb] = resp => { try{ onData(resp); } finally { delete window[cb]; } };
+  const s = document.createElement("script");
+  const sheet = SHEET_NAME ? "&sheet=" + encodeURIComponent(SHEET_NAME) : "";
+  s.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&headers=1${sheet}`;
+  s.onerror = noSignal;
+  document.head.appendChild(s);
+  setTimeout(()=>{ if(!ALL.length) noSignal(); }, 12000);
+}
+function cellVal(c){
+  if(!c || c.v === null || c.v === undefined) return "";
+  if(typeof c.v === "number" && Number.isInteger(c.v)) return String(c.v); // évite « 1 978 »
+  return String(c.f ?? c.v).trim();
+}
+function onData(resp){
+  if(!resp || resp.status === "error" || !resp.table){ noSignal(); return; }
+  const cols = resp.table.cols.map(c => norm(c.label));
+  let rows = resp.table.rows.map(r => (r.c||[]).map(cellVal));
+  let headers = cols;
+  if(cols.every(c => !c) && rows.length){ headers = rows[0].map(norm); rows = rows.slice(1); }
+  const map = {};
+  FIELDS.forEach(([key, needle]) => { const i = headers.findIndex(h => h.includes(needle)); if(i>-1) map[key]=i; });
+  ALL = rows.map((r,i) => {
+    const o = {_i:i};
+    FIELDS.forEach(([k]) => o[k] = map[k]!==undefined ? (r[map[k]]||"") : "");
+    o._hay = norm(Object.values(o).join(" "));
+    return o;
+  }).filter(o => o.titre);
+  if(!ALL.length){ noSignal(); return; }
+  buildFilters();
+  applyFilters(true);
+  $("#foot").innerHTML = `${ALL.length} séries · Données : <a href="https://docs.google.com/spreadsheets/d/${SHEET_ID}" target="_blank" rel="noopener">Google Sheets</a>`;
+}
+function noSignal(){
+  if(ALL.length) return;
+  $("#osd").textContent = "AV";
+  $("#sTitle").textContent = "Pas de signal";
+  $("#sTitle").style.fontSize = "";
+  $("#sMeta").textContent = "Vérifiez que la feuille Google est partagée « Tous les utilisateurs disposant du lien »";
+  $("#sHint").hidden = true;
+  setNoise(.85);
+}
+
+/* ===================== FILTRES ===================== */
+function fillSelect(sel, label, values){
+  sel.innerHTML = `<option value="">${label}</option>` + values.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join("");
+}
+const uniq = a => [...new Set(a.filter(Boolean))].sort((a,b)=>a.localeCompare(b,"fr"));
+function buildFilters(){
+  fillSelect($("#fFam"), "Toutes", uniq(ALL.map(o=>o.famille)));
+  fillSelect($("#fChan"), "Toutes", uniq(ALL.map(o=>mainChannel(o.chaine)).filter(c=>!/^a preciser/.test(norm(c)))));
+  fillSelect($("#fPays"), "Tous", uniq(ALL.flatMap(o=>o.pays.split("/").map(p=>p.trim()))));
+}
+function applyFilters(first){
+  const q = norm($("#q").value), fam = $("#fFam").value, ch = $("#fChan").value, pays = $("#fPays").value, sort = $("#fSort").value;
+  const words = q.split(/\s+/).filter(Boolean);
+  const current = LIST[idx];
+  LIST = ALL.filter(o =>
+    (!fam || o.famille === fam) &&
+    (!ch || mainChannel(o.chaine) === ch) &&
+    (!pays || o.pays.split("/").map(p=>p.trim()).includes(pays)) &&
+    words.every(w => o._hay.includes(w))
+  );
+  if(sort === "year") LIST.sort((a,b)=> (parseInt(a.annee)||9999)-(parseInt(b.annee)||9999) || a.titre.localeCompare(b.titre,"fr"));
+  else if(sort === "az") LIST.sort((a,b)=> stripArticle(a.titre).localeCompare(stripArticle(b.titre),"fr"));
+  $("#count").textContent = String(LIST.length).padStart(3,"0");
+  let target = 0;
+  if(first && location.hash){ const h = decodeURIComponent(location.hash.slice(1)); const j = LIST.findIndex(o=>slug(o.titre)===h); if(j>-1) target=j; }
+  else if(current){ const j = LIST.indexOf(current); if(j>-1) target = j; }
+  tune(target, !first);
+  renderTeletext();
+}
+
+/* ===================== ÉCRAN ===================== */
+function fitTitle(el, text){
+  const w = $("#screen").clientWidth || 600;
+  const longest = Math.max(...text.split(/\s+/).map(x=>x.length), 6);
+  const size = Math.min(w*0.115, w*1.35/Math.max(text.length*0.62, 8), w*0.82/(longest*0.78));
+  el.style.fontSize = Math.max(size, 16) + "px";
+}
+function renderScene(){
+  const o = LIST[idx];
+  if(!o){
+    $("#osd").textContent = "P--"; $("#chanLed").textContent = "--"; $("#osdR").textContent = "";
+    $("#sTitle").textContent = "Aucun programme"; $("#sTitle").style.fontSize = "";
+    $("#sMeta").textContent = "Modifiez la recherche ou les filtres";
+    $("#sTag").hidden = true; $("#sHint").hidden = true;
+    setGlow(FALLBACK_COLOR); setNoise(.5); return;
+  }
+  const p = "P" + pad(idx+1);
+  $("#osd").textContent = p; $("#chanLed").textContent = pad(idx+1);
+  $("#osdR").textContent = mainChannel(o.chaine) && !/^a preciser/.test(norm(o.chaine)) ? mainChannel(o.chaine) : "";
+  const t = $("#sTitle"); t.textContent = o.titre; fitTitle(t, o.titre);
+  $("#sMeta").textContent = [o.annee, o.pays].filter(Boolean).join(" · ");
+  const tag = $("#sTag"); tag.textContent = o.famille; tag.hidden = !o.famille;
+  $("#sHint").hidden = false;
+  setGlow(colorFor(o.chaine));
+  $("#live").textContent = `Chaîne ${idx+1} : ${o.titre}`;
+  history.replaceState(null, "", "#" + slug(o.titre));
+  document.querySelectorAll("#txtList button").forEach((b,i)=>b.classList.toggle("cur", i===idx));
+}
+function setGlow(c){ document.documentElement.style.setProperty("--glow", c); }
+function tune(i, withZap=true){
+  if(!LIST.length){ idx = 0; renderScene(); return; }
+  idx = (i + LIST.length) % LIST.length;
+  if(withZap){ zapFx(renderScene); } else { renderScene(); setNoise(.07); }
+}
+
+/* bruit cathodique */
+const cv = $("#noise"), cx = cv.getContext("2d"); let noiseLevel = .07, raf = 0;
+function drawNoise(){
+  const img = cx.createImageData(cv.width, cv.height), d = img.data;
+  for(let i=0;i<d.length;i+=4){ const v = Math.random()*255|0; d[i]=d[i+1]=d[i+2]=v; d[i+3]=255; }
+  cx.putImageData(img,0,0);
+  raf = requestAnimationFrame(drawNoise);
+}
+function setNoise(level){ noiseLevel = level; cv.style.opacity = level; }
+let zapTimer;
+function zapFx(cb){
+  const sc = $("#screen");
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches){ cb(); return; }
+  clearTimeout(zapTimer);
+  setNoise(.95); sc.classList.remove("zap");
+  zapTimer = setTimeout(()=>{ cb(); void sc.offsetWidth; sc.classList.add("zap"); setNoise(.35);
+    zapTimer = setTimeout(()=>setNoise(.07), 140); }, 170);
+}
+
+/* télétexte */
+function renderTeletext(){
+  const ul = $("#txtList");
+  ul.innerHTML = LIST.map((o,i)=>`<li><button data-i="${i}" class="${i===idx?"cur":""}"><span class="n">${pad(i+1)}</span><span class="t">${esc(o.titre)}</span><span>${esc(o.annee)}</span></button></li>`).join("")
+    || `<li><button disabled><span class="n">--</span><span class="t">AUCUN PROGRAMME</span></button></li>`;
+  $("#txtSub").textContent = `LE GUIDE DES PROGRAMMES · ${LIST.length} SÉRIE${LIST.length>1?"S":""}`;
+}
+function setTeletext(on){
+  teletext = on;
+  $("#screen").classList.toggle("teletext", on);
+  $("#bTxt").setAttribute("aria-pressed", on);
+  if(on){ const cur = $("#txtList .cur"); if(cur) cur.scrollIntoView({block:"center"}); }
+}
+$("#txtList").addEventListener("click", e => {
+  const b = e.target.closest("button[data-i]"); if(!b) return;
+  e.stopPropagation(); setTeletext(false); tune(+b.dataset.i);
+});
+(function(){ const d=new Date(); $("#txtDate").textContent = d.toLocaleDateString("fr-FR",{weekday:"short",day:"2-digit",month:"short"}).toUpperCase()+" "+pad(d.getHours())+":"+pad(d.getMinutes()); })();
+
+/* ===================== FICHE ===================== */
+function chipsHTML(val){
+  return split(val).map(x=>{
+    const m = x.match(/^(.*?)\s*(\(.*\))\s*$/);
+    const name = m ? m[1] : x, extra = m ? ` <small>${esc(m[2])}</small>` : "";
+    return `<button class="chip" data-q="${esc(name)}">${esc(name)}${extra}</button>`;
+  }).join("");
+}
+function openFiche(){
+  const o = LIST[idx]; if(!o) return;
+  $("#mP").textContent = "P" + pad(idx+1);
+  $("#mKicker").textContent = [o.famille, mainChannel(o.chaine)].filter(Boolean).join(" · ");
+  $("#mTitle").textContent = o.titre;
+  const facts = [["Première diffusion",o.annee],["Chaîne",o.chaine],["Pays",o.pays],["Épisodes",o.episodes]].filter(f=>f[1]);
+  $("#mFacts").innerHTML = facts.map(([k,v])=>`<div class="fact"><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("");
+  const cr = CREDITS.filter(([k])=>o[k]);
+  $("#mCredits").innerHTML = cr.map(([k,label])=>`<section class="credit${split(o[k]).length>3||k==="generique"||k==="acteurs"?" full":""}"><h3>${label}</h3><div class="chips">${chipsHTML(o[k])}</div></section>`).join("")
+    || `<p>Fiche en cours de documentation.</p>`;
+  const ov = $("#overlay"); ov.classList.add("open"); ov.setAttribute("aria-hidden","false");
+  ov.scrollTop = 0; document.body.style.overflow = "hidden";
+  $("#mClose").focus();
+}
+function closeFiche(){
+  const ov = $("#overlay"); if(!ov.classList.contains("open")) return;
+  ov.classList.remove("open"); ov.setAttribute("aria-hidden","true");
+  document.body.style.overflow = ""; $("#screen").focus();
+}
+$("#mClose").onclick = closeFiche;
+$("#overlay").addEventListener("click", e => { if(e.target.id==="overlay") closeFiche(); });
+$("#mPrev").onclick = () => { tune(idx-1,false); openFiche(); };
+$("#mNext").onclick = () => { tune(idx+1,false); openFiche(); };
+$("#mCredits").addEventListener("click", e => {
+  const c = e.target.closest(".chip"); if(!c) return;
+  $("#q").value = c.dataset.q; $("#fFam").value = $("#fChan").value = $("#fPays").value = "";
+  closeFiche(); applyFilters(); setTeletext(LIST.length > 1);
+});
+
+/* ===================== COMMANDES ===================== */
+function press(id){ const b=$(id); b.classList.add("pressed"); setTimeout(()=>b.classList.remove("pressed"),120); }
+$("#bNext").onclick = () => { setTeletext(false); tune(idx+1); };
+$("#bPrev").onclick = () => { setTeletext(false); tune(idx-1); };
+$("#bZap").onclick  = () => { setTeletext(false); if(LIST.length>1){ let j; do{ j = Math.random()*LIST.length|0; }while(j===idx); tune(j); } };
+$("#bTxt").onclick  = () => setTeletext(!teletext);
+$("#bOk").onclick   = () => { setTeletext(false); openFiche(); };
+$("#screen").addEventListener("click", e => { if(teletext) return; openFiche(); });
+$("#screen").addEventListener("keydown", e => { if((e.key==="Enter"||e.key===" ") && !teletext){ e.preventDefault(); openFiche(); } });
+
+let debounce;
+$("#q").addEventListener("input", () => { clearTimeout(debounce); debounce = setTimeout(()=>applyFilters(), 180); });
+["#fFam","#fChan","#fPays","#fSort"].forEach(s => $(s).addEventListener("change", ()=>applyFilters()));
+$("#reset").onclick = () => { $("#q").value=""; $("#fFam").value=$("#fChan").value=$("#fPays").value=""; $("#fSort").value="base"; setTeletext(false); applyFilters(); };
+
+document.addEventListener("keydown", e => {
+  const typing = /^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName);
+  if($("#overlay").classList.contains("open")){
+    if(e.key==="Escape") closeFiche();
+    else if(e.key==="ArrowRight") $("#mNext").click();
+    else if(e.key==="ArrowLeft") $("#mPrev").click();
+    else if(e.key==="Tab"){ // piège à focus dans la fiche
+      const f=[...$("#mag").querySelectorAll("button")]; const first=f[0], last=f[f.length-1];
+      if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+    }
+    return;
+  }
+  if(typing){ if(e.key==="Escape") document.activeElement.blur(); return; }
+  if(e.key==="ArrowRight"||e.key==="ArrowUp"){ e.preventDefault(); press("#bNext"); $("#bNext").click(); }
+  else if(e.key==="ArrowLeft"||e.key==="ArrowDown"){ e.preventDefault(); press("#bPrev"); $("#bPrev").click(); }
+  else if(e.key==="Enter" && document.activeElement===document.body){ press("#bOk"); openFiche(); }
+  else if(e.key.toLowerCase()==="t"){ press("#bTxt"); setTeletext(!teletext); }
+  else if(e.key.toLowerCase()==="z"){ press("#bZap"); $("#bZap").click(); }
+  else if(e.key==="/"){ e.preventDefault(); $("#q").focus(); }
+});
+
+/* balayage sur mobile */
+let tx=null, ty=null;
+$("#screen").addEventListener("touchstart", e => { tx=e.touches[0].clientX; ty=e.touches[0].clientY; }, {passive:true});
+$("#screen").addEventListener("touchend", e => {
+  if(tx===null || teletext) return;
+  const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty; tx=null;
+  if(Math.abs(dx)>45 && Math.abs(dx)>Math.abs(dy)){ e.preventDefault(); tune(idx + (dx<0?1:-1)); }
+});
+window.addEventListener("resize", () => { const o=LIST[idx]; if(o) fitTitle($("#sTitle"), o.titre); });
+
+/* ===================== DÉMARRAGE ===================== */
+drawNoise(); setNoise(.6);
+setTimeout(()=>$("#screen").classList.remove("on"), 800);
+loadSheet();
+</script>
+</body>
+</html>
