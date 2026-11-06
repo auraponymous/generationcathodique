@@ -9,12 +9,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Oswald:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=VT323&display=swap" rel="stylesheet">
 <style>
-/* ======================
-   GÉNÉRATION CATHODIQUE
-   ====================== */
+/* =========================================================
+   GÉNÉRATION CATHODIQUE — un seul fichier, données Google Sheets (gviz)
+   ========================================================= */
 :root{
-  --room:#140d09;
-  --room-2:#21150e;
+  --room:#c4c8cd;
+  --room-2:#d9dcdf;
     --plastic:#1c1b1a;
   --silver-1:#d9d6cf; --silver-2:#a9a59c;
   --led-green:#7dff9b;
@@ -29,7 +29,7 @@ html,body{margin:0}
 body{
   min-height:100vh;
   background:var(--room);
-  color:#f1e7d6;
+  color:#1f2226;
   font-family:"Source Serif 4",Georgia,serif;
   overflow-x:hidden;
   position:relative;
@@ -38,15 +38,15 @@ body{
 body::before{
   content:"";position:fixed;inset:0;z-index:-2;
   background:
-    radial-gradient(circle at 50% 38%, color-mix(in srgb,var(--glow) 34%, transparent) 0, transparent 46%),
-    radial-gradient(circle at 12px 12px, rgba(255,190,120,.055) 3px, transparent 4px) 0 0/24px 24px,
-    repeating-linear-gradient(90deg, rgba(255,170,90,.035) 0 2px, transparent 2px 48px),
+    radial-gradient(circle at 50% 40%, color-mix(in srgb,var(--glow) 16%, transparent) 0, transparent 44%),
+    radial-gradient(circle at 12px 12px, rgba(60,70,85,.07) 2px, transparent 3px) 0 0/24px 24px,
+    repeating-linear-gradient(90deg, rgba(60,70,85,.035) 0 1px, transparent 1px 48px),
     linear-gradient(180deg,var(--room-2),var(--room));
   transition:background .6s ease;
 }
 body::after{ /* parquet / sol */
   content:"";position:fixed;left:0;right:0;bottom:0;height:22vh;z-index:-1;
-  background:linear-gradient(180deg,transparent,rgba(0,0,0,.55));
+  background:linear-gradient(180deg,transparent,rgba(40,45,55,.14));
   pointer-events:none;
 }
 .wrap{width:min(1040px,100%);margin:0 auto;padding:22px 16px 40px}
@@ -57,12 +57,13 @@ header{text-align:center;margin:6px 0 22px}
   font-family:"Bungee",system-ui,sans-serif;
   font-size:clamp(28px,5.6vw,52px);
   line-height:.95;margin:0;letter-spacing:.01em;
-  background:linear-gradient(180deg,#fff 0%,#ffe2b8 30%,#ff8a3d 52%,#c2185b 53%,#ff5d8f 80%,#ffd1e0 100%);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 3px 0 #2a0b1a) drop-shadow(0 0 18px rgba(255,93,143,.35));
+  -webkit-text-stroke:2px #111;paint-order:stroke fill;
+  text-shadow:3px 3px 0 #111, 5px 5px 0 rgba(0,0,0,.18);
   transform:skew(-6deg);
 }
-.tagline{font-family:"VT323",monospace;font-size:20px;color:#d8c3a5;margin:8px 0 0;letter-spacing:.06em}
+.logo .y{color:#ffd400}
+.logo .r{color:#e30613}
+.tagline{font-family:"VT323",monospace;font-size:20px;color:#3b4048;margin:8px 0 0;letter-spacing:.06em}
 
 /* ---------- Téléviseur (années 80-90 : caisson plastique noir) ---------- */
 .tv{
@@ -75,7 +76,7 @@ header{text-align:center;margin:6px 0 22px}
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.16),
     inset 0 -2px 0 rgba(0,0,0,.7),
-    0 26px 50px rgba(0,0,0,.65),
+    0 24px 44px rgba(20,25,35,.45),
     0 0 0 1px #050505;
 }
 .tv::after{ /* socle pivotant */
@@ -185,7 +186,7 @@ canvas.noise{position:absolute;inset:0;width:100%;height:100%;image-rendering:pi
   margin:30px auto 0;width:min(680px,100%);
   border-radius:12px;padding:16px 18px 14px;
   background:linear-gradient(180deg,#2b2b2d,#18181a 40%,#0f0f10);
-  box-shadow:0 18px 40px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.12), 0 0 0 1px #000;
+  box-shadow:0 16px 34px rgba(20,25,35,.4), inset 0 1px 0 rgba(255,255,255,.12), 0 0 0 1px #000;
 }
 .deck-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;font-family:"Oswald",sans-serif;letter-spacing:.24em;font-size:11px;color:#9d978c;text-transform:uppercase}
 .deck-top .slot{flex:1;height:10px;border-radius:3px;background:#050505;box-shadow:inset 0 2px 3px #000,0 1px 0 rgba(255,255,255,.08);max-width:340px}
@@ -215,11 +216,10 @@ select.lcd option{background:#1a1006;color:#ffd9a3}
 .keys{font-family:"VT323",monospace;font-size:17px;color:#8f897e;letter-spacing:.03em}
 .keys kbd{font-family:inherit;border:1px solid #55524c;border-bottom-width:2px;border-radius:3px;padding:0 5px;color:#cfc8bb}
 
-footer{margin-top:34px;text-align:center;font-family:"VT323",monospace;font-size:17px;color:#9b8a73;letter-spacing:.04em}
-footer a{color:#d8b98e}
+footer{margin-top:34px;text-align:center;font-family:"VT323",monospace;font-size:17px;color:#4a5059;letter-spacing:.04em}
 
 /* ---------- Fiche façon magazine télé ---------- */
-.overlay{position:fixed;inset:0;z-index:50;background:rgba(8,5,3,.78);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;padding:4vh 16px;overflow:auto}
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(6,8,11,.8);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;padding:4vh 16px;overflow:auto}
 .overlay.open{display:flex}
 .mag{
   position:relative;width:min(780px,100%);
@@ -286,7 +286,7 @@ footer a{color:#d8b98e}
 <body>
 <div class="wrap">
   <header>
-    <h1 class="logo">Génération Cathodique</h1>
+    <h1 class="logo"><span class="y">Génération</span> <span class="r">Cathodique</span></h1>
     <p class="tagline">Zappez dans les séries et dessins animés des années 80</p>
   </header>
 
@@ -360,7 +360,7 @@ footer a{color:#d8b98e}
     </section>
   </main>
 
-  <footer id="foot">Données : Google Sheets</footer>
+  <footer id="foot">© Auraponymous 2026</footer>
 </div>
 
 <div class="overlay" id="overlay" aria-hidden="true">
@@ -455,7 +455,7 @@ function onData(resp){
   if(!ALL.length){ noSignal(); return; }
   buildFilters();
   applyFilters(true);
-  $("#foot").innerHTML = `${ALL.length} séries`;
+  $("#foot").textContent = `${ALL.length} séries · © Auraponymous 2026`;
 }
 function noSignal(){
   if(ALL.length) return;
