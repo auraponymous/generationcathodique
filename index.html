@@ -9,9 +9,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Oswald:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=VT323&display=swap" rel="stylesheet">
 <style>
-/* =========================================================
-   GÉNÉRATION CATHODIQUE — un seul fichier, données Google Sheets (gviz)
-   ========================================================= */
+/* ======================
+   GÉNÉRATION CATHODIQUE
+   ====================== */
 :root{
   --room:#140d09;
   --room-2:#21150e;
@@ -360,7 +360,6 @@ footer a{color:#d8b98e}
     </section>
   </main>
 
-  <footer id="foot">Données : Google Sheets</footer>
 </div>
 
 <div class="overlay" id="overlay" aria-hidden="true">
@@ -455,7 +454,7 @@ function onData(resp){
   if(!ALL.length){ noSignal(); return; }
   buildFilters();
   applyFilters(true);
-  $("#foot").innerHTML = `${ALL.length} séries · Données : <a href="https://docs.google.com/spreadsheets/d/${SHEET_ID}" target="_blank" rel="noopener">Google Sheets</a>`;
+  $("#foot").innerHTML = `${ALL.length} séries ;
 }
 function noSignal(){
   if(ALL.length) return;
